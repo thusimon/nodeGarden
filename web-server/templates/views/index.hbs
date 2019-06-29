@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>{{headerTitle}}</title>
+    <link rel="icon" href="/img/weather.png">
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="main-content">
+      {{>header}}
+      <p>Use this site to get your weather</p>
+      <form>
+        <input id="address-input" type="text" placeholder="address"/>
+        <input id="submit-btn" type="submit" value="Submit"/>
+      </form>
+      <div>
+        <p id='success-msg'></p>
+        <p id='fail-msg'></p>
+      </div>
+    </div>
+    {{>footer}}
+    <script src="/js/app.js" type=""></script>
+  </body>
+</html>
