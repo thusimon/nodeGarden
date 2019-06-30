@@ -5,6 +5,7 @@ const getGeoLocation = require('./utils/getGeoLocation');
 const getWeather = require('./utils/getWeather');
 const hbs = require('hbs');
 const app = express();
+const port = process.env.PORT || 3002;
 
 // define path for express config
 const viewsPath = path.join(__dirname, '../templates/views');
@@ -84,6 +85,6 @@ app.get('*', (req, res)=>{
   });
 });
 
-app.listen(3002, () => {
+app.listen(port, () => {
   console.log('Server is up on port 3002')
 })

@@ -2,7 +2,7 @@ console.log('main page loaded');
 
 function getWeather(address) {
   var addressEncoded = encodeURIComponent(address);
-  return fetch('http://localhost:3002/weather?address='+addressEncoded)
+  return fetch('/weather?address='+addressEncoded)
   .then(resp => {
     return resp.json();
   })
@@ -37,7 +37,9 @@ function submitBtnHandler(evt) {
   getWeather(address).then(data => {
     const location = data.location;
     const curWeather = data.weather.currently;
-    const msg = `Location: ${location.name}\nWeather: Temprature is ${curWeather.temperature}, ${(curWeather.precipProbability*100).toFixed(2)}% probablity to rain.`;
+    const msg = `Location: ${location.name}
+    Weather: ${curWeather.summary}
+    Temprature is ${curWeather.temperature}, ${(curWeather.precipProbability*100).toFixed(2)}% probablity to rain.`;
     $successMsg.innerText = msg;
     $failMsg.innerText = '';
   }).catch(err => {
