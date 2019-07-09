@@ -1,7 +1,7 @@
 body {
   color: #333333;
   font-family: arial;
-  max-width: 650px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 16px;
   display: flex;
@@ -41,6 +41,12 @@ h1 {
   height: auto;
   display:block;
 }
+
+img.cover {
+  width: 100%;
+  height: auto;
+}
+
 #address-input {
   border: 1px solid #cccccc;
   padding: 8px;

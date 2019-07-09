@@ -20,7 +20,23 @@ app.use(express.static(publicDirectoryPath));
 app.get('', (req, res)=>{
   res.render('index', {
     headerTitle: 'Home',
-    title: 'Welcome to weather report',
+    title: 'Welcome to the App',
+    author: 'Lu'
+  })
+});
+
+app.get('/weatherapp', (req, res) => {
+  res.render('weatherapp', {
+    headerTitle: 'Weather',
+    title: 'Welcome to Weather Report',
+    author: 'Lu'
+  })
+});
+
+app.get('/bio', (req, res) => {
+  res.render('bio', {
+    headerTitle: 'Weather',
+    title: 'Welcome to Bio Recorder',
     author: 'Lu'
   })
 });
