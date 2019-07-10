@@ -2,7 +2,7 @@ console.log('main page loaded');
 
 function getWeather(address) {
   var addressEncoded = encodeURIComponent(address);
-  return fetch('/weather?address='+addressEncoded)
+  return fetch('/api/weather?address='+addressEncoded)
   .then(resp => {
     return resp.json();
   })
