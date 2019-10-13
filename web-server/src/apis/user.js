@@ -1,12 +1,8 @@
 const User = require('../models/user');
+const factory = require('./factory');
 
-const userPostAPI = (req, res) => {
-  const user = new User(req.body);
-  user.save().then(() => {
-    res.status(200).send(user);
-  }).catch(err => {
-    res.status(400).send(err);
-  })
+const option = {
+  allowedUpdateFields: ['name', 'email', 'password', 'age']
 }
 
-module.exports = userPostAPI;
+module.exports = factory(User, option);
