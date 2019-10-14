@@ -3,9 +3,9 @@ const factory = (Modal, option = {}) => {
     const modal = new Modal(req.body);
     try {
       await modal.save();
-      return res.status(200).send(modal)
+      return res.status(201).send(modal)
     } catch (err) {
-      return res.status(500).send(err);
+      return res.status(500).send(err.toString());
     }
   };
   
@@ -24,7 +24,7 @@ const factory = (Modal, option = {}) => {
         return res.status(200).send(modals);
       }
     } catch (err) {
-      return res.status(500).send(err);
+      return res.status(500).send(err.toString());
     }
   };
 
@@ -42,14 +42,15 @@ const factory = (Modal, option = {}) => {
       if (!isValidUpdate) {
         return res.status(400).send('invalid field to update');
       }
-      const modal = await Modal.findByIdAndUpdate(id, req.body, {new: true, runValidators: true});
+      let modal = await Modal.findById(id);
       if (!modal) {
         return res.status(404).send(`no data with Id=${id}`);
-      } else {
-        return res.status(200).send(modal);
       }
+      modal = Object.assign(modal, req.body);
+      await modal.save();
+      return res.status(200).send(modal);
     } catch (err) {
-      return res.status(500).send(err);
+      return res.status(500).send(err.toString());
     }
   };
   
@@ -66,7 +67,7 @@ const factory = (Modal, option = {}) => {
         return res.status(200).send(modal);
       }
     } catch (err) {
-      return res.status(500).send(err);
+      return res.status(500).send(err.toString());
     }
   };
 

@@ -1,12 +1,13 @@
 const express = require('express');
 const api = require('../apis/task');
+const auth = require('./middleware/auth');
 
 const router = new express.Router();
 
-router.post('/api/task', api.create);
-router.get('/api/task/:id', api.read);
-router.get('/api/task', api.read);
-router.patch('/api/task/:id', api.update);
-router.delete('/api/task/:id', api.del);
+router.post('/api/task', auth, api.createTask);
+router.get('/api/task/:id', auth, api.getTask);
+router.get('/api/task', auth, api.getTask);
+router.patch('/api/task/:id', auth, api.updateTask);
+router.delete('/api/task/:id', auth, api.deleteTask);
 
 module.exports = router;
