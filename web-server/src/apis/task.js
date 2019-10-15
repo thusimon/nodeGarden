@@ -34,9 +34,24 @@ api.getTask = async (req, res) => {
         return res.status(404).send('can not find task');
       }
     } else {
-      const tasks = await Task.find({owner: userId});
-      const user = req.user.toJSON();
-      return res.status(200).send({tasks, user});
+      const match = {}, sort = {};
+      if (req.query.completed) {
+        match.completed = req.query.completed === 'true';
+      }
+      if (req.query.sort) {
+        const sortParts = req.query.sort.split('_');
+        sort[sortParts[0]] = sortParts[1] == 'desc' ? -1 : 1; 
+      }
+      await req.user.populate({
+        path: 'tasks',
+        match,
+        options: {
+          limit: parseInt(req.query.limit),
+          skip: parseInt(req.query.skip),
+          sort
+        }
+      }).execPopulate()
+      return res.status(200).send({tasks: req.user.tasks});
     }
   } catch (err) {
     return res.status(500).send(err.toString());

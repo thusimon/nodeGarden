@@ -50,6 +50,8 @@ const userSchema = new Schema({
     type: [tokenSchema],
     default: []
   }
+}, {
+  timestamps:true
 });
 
 userSchema.virtual('tasks', {

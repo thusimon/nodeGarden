@@ -42,13 +42,3 @@ app.use(errorRouter);
 app.listen(port, () => {
   console.log(`Server is up on port ${port}`);
 });
-
-const bcrypt = require('bcryptjs');
-
-const showHash = async (pwd) => {
-  const hash = await bcrypt.hash(pwd, 8);
-  const isMatch = await bcrypt.compare(pwd, hash);
-  console.log(pwd, hash, isMatch);
-}
-
-showHash('test123');

@@ -1,11 +1,28 @@
 const express = require('express');
 const api = require('../apis/user');
 const auth = require('./middleware/auth');
+const multer = require('multer');
 
 const router = new express.Router();
-
+const uploader = multer({
+  dest: 'upload/user/avatar',
+  limits: {
+    fileSize: 1024*1024
+  },
+  fileFilter(req, file, cb) {
+    if (file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
+      return cb(undefined, true);
+    } else {
+      return cb(new Error('please upload jpg/jpeg/png'));
+    }
+  }
+});
 router.post('/api/user', api.register);
 router.post('/api/user/login', api.login);
+router.post('/api/user/me/avatar', uploader.single('avatar'), async (req, res) => {
+  res.send();
+});
+
 router.get('/api/user/me', auth, async (req, res) => {
   const user = req.user;
   try {
