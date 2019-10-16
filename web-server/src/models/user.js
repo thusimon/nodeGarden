@@ -49,14 +49,17 @@ const userSchema = new Schema({
   tokens: {
     type: [tokenSchema],
     default: []
+  },
+  avatar: {
+    type: Buffer
   }
 }, {
   timestamps:true
 });
 
 userSchema.virtual('tasks', {
-  ref: 'Task',
-  localField: '_id',
+  ref: 'Task', // the modal
+  localField: '_id', // user._id = Task.owner
   foreignField: 'owner'
 });
 
@@ -72,6 +75,7 @@ userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
   delete user.tokens;
+  delete user.avatar;
   return user;
 }
 
