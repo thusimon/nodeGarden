@@ -7,6 +7,8 @@ const tokenSchema = require('./token');
 const Task = require('./task');
 
 const {PRIVATE_KEY} = require('../constants/keys');
+const activateTimeout = 60*60; //1h
+
 // mongoose use model name, convert to lowercase and pluralize it
 // so User will go to collection users
 const userSchema = new Schema({
@@ -37,6 +39,9 @@ const userSchema = new Schema({
       }
     }
   },
+  status: {
+    type: Number //0 not activated, 1 activated
+  },
   age: {
     type: Number,
     default: 0,
@@ -63,11 +68,16 @@ userSchema.virtual('tasks', {
   foreignField: 'owner'
 });
 
-userSchema.methods.generateAuthToken = async function() {
+userSchema.methods.generateAuthToken = function() {
   const user = this;
   const token = jwt.sign({id: user._id.toString()}, PRIVATE_KEY);
   user.tokens = user.tokens.concat({token});
-  await user.save();
+  return token;
+}
+
+userSchema.methods.generateActivationToken = function() {
+  const user = this;
+  const token = jwt.sign({id: user._id.toString()}, PRIVATE_KEY);
   return token;
 }
 
@@ -89,6 +99,22 @@ userSchema.statics.findByCredentials = async (email, password) => {
     throw new Error('unable to login');
   }
   return user;
+}
+
+userSchema.statics.activateUser = async (token) => {
+  const decoded = jwt.verify(token, PRIVATE_KEY);
+  if (Date.now()/1000 > decoded.iat + activateTimeout) {
+    throw new Error('activate timeout, please ask for new activation code');
+  }
+  const user = await User.findById(decoded.id);
+  if (!user) {
+    throw new Error('no such user');
+  }
+  if (user.status == 1) {
+    throw new Error('already activated');
+  }
+  user.status = 1;
+  return await user.save();
 }
 
 userSchema.pre('save', async function(next) {

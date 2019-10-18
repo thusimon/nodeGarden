@@ -46,6 +46,18 @@ router.get('/api/user/:id/avatar', async (req, res) => {
     return res.status(404).send(err.message);
   }
 });
+router.get('/api/user/activate', async (req, res) => {
+  try {
+    const token = req.query.token;
+    if (!token) {
+      return res.status(403).send('missing activate token');
+    }
+    const updatedUser = await User.activateUser(token);
+    return res.status(200).send('successfully activated');
+  } catch (err) {
+    return res.status(403).send(err.message);
+  }
+})
 router.delete('/api/user/me/avatar', auth, async (req, res) => {
   try {
     req.user.avatar = undefined;
