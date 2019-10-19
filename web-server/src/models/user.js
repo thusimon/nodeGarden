@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const tokenSchema = require('./token');
 const Task = require('./task');
 
-const {PRIVATE_KEY} = require('../constants/keys');
 const activateTimeout = 60*60; //1h
 
 // mongoose use model name, convert to lowercase and pluralize it
@@ -70,14 +69,14 @@ userSchema.virtual('tasks', {
 
 userSchema.methods.generateAuthToken = function() {
   const user = this;
-  const token = jwt.sign({id: user._id.toString()}, PRIVATE_KEY);
+  const token = jwt.sign({id: user._id.toString()}, process.env.JWT_PRIVATE_KEY);
   user.tokens = user.tokens.concat({token});
   return token;
 }
 
 userSchema.methods.generateActivationToken = function() {
   const user = this;
-  const token = jwt.sign({id: user._id.toString()}, PRIVATE_KEY);
+  const token = jwt.sign({id: user._id.toString()}, process.env.JWT_PRIVATE_KEY);
   return token;
 }
 
@@ -102,7 +101,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 }
 
 userSchema.statics.activateUser = async (token) => {
-  const decoded = jwt.verify(token, PRIVATE_KEY);
+  const decoded = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
   if (Date.now()/1000 > decoded.iat + activateTimeout) {
     throw new Error('activate timeout, please ask for new activation code');
   }

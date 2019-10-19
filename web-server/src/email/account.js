@@ -1,7 +1,5 @@
 const sgMail = require('@sendgrid/mail');
 
-const sendGridApiKey = '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';
-
 const handlbars = require('handlebars');
 const templates = require('../../templates/emails/user');
 
@@ -13,7 +11,7 @@ const generateActivateLink = (token) => {
   return `${rootUrl}${activatePath}?token=${token}`;
 }
 
-sgMail.setApiKey(sendGridApiKey);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendWelcomeEmail = (dest, username, activateToken) => {
   const welcomeTemplate = handlbars.compile(templates.welcome);
@@ -30,4 +28,17 @@ const sendWelcomeEmail = (dest, username, activateToken) => {
   });
 }
 
-module.exports = {sendWelcomeEmail};
+const sendGoodbyeEmail = (dest, username) => {
+  const goodbyeTemplate = handlbars.compile(templates.goodbye);
+  const html = goodbyeTemplate({
+    username
+  });
+  sgMail.send({
+    from: supportEmail,
+    to: dest,
+    subject: 'We will miss you',
+    html
+  })
+}
+
+module.exports = {sendWelcomeEmail, sendGoodbyeEmail};

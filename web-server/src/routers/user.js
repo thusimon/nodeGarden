@@ -4,6 +4,7 @@ const auth = require('./middleware/auth');
 const multer = require('multer');
 const User = require('../models/user');
 const sharp = require('sharp');
+const { sendGoodbyeEmail } = require('../email/account');
 
 const router = new express.Router();
 const uploader = multer({
@@ -46,7 +47,7 @@ router.get('/api/user/:id/avatar', async (req, res) => {
     return res.status(404).send(err.message);
   }
 });
-router.get('/api/user/activate', async (req, res) => {
+router.get('/api/user/activate', auth, async (req, res) => {
   try {
     const token = req.query.token;
     if (!token) {
@@ -57,7 +58,18 @@ router.get('/api/user/activate', async (req, res) => {
   } catch (err) {
     return res.status(403).send(err.message);
   }
-})
+});
+router.get('/api/user/deactivate', auth, async (req, res) => {
+  try {
+    const user = req.user;
+    user.status = 0;
+    await user.save();
+    sendGoodbyeEmail(user.email, user.name);
+    return res.status(200).send('successfully deactivated');
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+});
 router.delete('/api/user/me/avatar', auth, async (req, res) => {
   try {
     req.user.avatar = undefined;

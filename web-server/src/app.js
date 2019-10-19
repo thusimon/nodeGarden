@@ -3,7 +3,7 @@ const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT;
 
 // define path for express config
 const viewsPath = path.join(__dirname, '../templates/views');

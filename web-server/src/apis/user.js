@@ -11,9 +11,6 @@ const api = factory(User, option);
 api.login = async (req, res) => {
   try {
     const user = await User.findByCredentials(req.body.email, req.body.password);
-    if (user.status !== 1) {
-      return res.status(403).send('please activate your account');
-    }
     const token = user.generateAuthToken();
     await user.save();
     return res.status(200).send({user, token});

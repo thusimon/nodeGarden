@@ -6,4 +6,10 @@ For any questions, please send email to {{supportEmail}}<br/>
 Sincerely<br/>
 Violin Helper<br/>`;
 
-module.exports = { welcome };
+const goodbye = `Goodbye <strong>{{username}}</strong>,<br/>
+You can come back anytime<br/>
+<br/>
+Sincerely<br/>
+Violin Helper<br/>`;
+
+module.exports = { welcome, goodbye };
