@@ -12,6 +12,7 @@ api.login = async (req, res) => {
   try {
     const user = await User.findByCredentials(req.body.email, req.body.password);
     const token = user.generateAuthToken();
+    user.tokens = user.tokens.concat({token});
     await user.save();
     return res.status(200).send({user, token});
   } catch (err) {
@@ -24,6 +25,7 @@ api.register = async(req, res) => {
   user.status = 0; // not activated
   try {
     const token = user.generateAuthToken();
+    user.tokens = user.tokens.concat({token});
     const activateToken = user.generateActivationToken();
     await user.save();
     sendWelcomeEmail(user.email, user.name, activateToken);

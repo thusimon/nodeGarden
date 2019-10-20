@@ -70,7 +70,6 @@ userSchema.virtual('tasks', {
 userSchema.methods.generateAuthToken = function() {
   const user = this;
   const token = jwt.sign({id: user._id.toString()}, process.env.JWT_PRIVATE_KEY);
-  user.tokens = user.tokens.concat({token});
   return token;
 }
 
@@ -108,9 +107,6 @@ userSchema.statics.activateUser = async (token) => {
   const user = await User.findById(decoded.id);
   if (!user) {
     throw new Error('no such user');
-  }
-  if (user.status == 1) {
-    throw new Error('already activated');
   }
   user.status = 1;
   return await user.save();

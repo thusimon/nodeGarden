@@ -53,7 +53,7 @@ router.get('/api/user/activate', auth, async (req, res) => {
     if (!token) {
       return res.status(403).send('missing activate token');
     }
-    const updatedUser = await User.activateUser(token);
+    await User.activateUser(token);
     return res.status(200).send('successfully activated');
   } catch (err) {
     return res.status(403).send(err.message);
@@ -86,7 +86,7 @@ router.get('/api/user/me', auth, async (req, res) => {
     await user.populate('tasks').execPopulate();
     return res.status(200).send({user, tasks: user.tasks});
   } catch (err) {
-    return res.status(500).send(err.toString());
+    return res.status(400).send(err.toString());
   }
 });
 router.get('/api/user/logout', auth, async (req, res) => {
