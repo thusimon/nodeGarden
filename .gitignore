@@ -3,3 +3,5 @@ config/
 node_modules/
 .vscode/
 package-lock.json
+
+web-server/public/bundled

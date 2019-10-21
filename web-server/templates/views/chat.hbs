@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>{{headerTitle}}</title>
+    <link rel="icon" href="/img/chat.png">
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="main-content">
+      {{>header}}
+      <div id="chat-container"></div>
+    </div>
+    {{>footer}}
+    <!-- how is this setup? -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/bundled/chat-bundle.js"></script>
+  </body>
+</html>
