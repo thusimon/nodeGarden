@@ -15,6 +15,8 @@ class Chat extends React.Component {
     this.onFormSubmit = this.onFormSubmit.bind(this);
     this.onSendLocClick = this.onSendLocClick.bind(this);
     this.joinAsBtnClick = this.joinAsBtnClick.bind(this);
+    this.joinClick = this.joinClick.bind(this);
+    this.cancelClick = this.cancelClick.bind(this);
     this.sendMsgBtnRef = React.createRef();
     this.sendMsgInputRef = React.createRef();
     this.sendLocBtnRef = React.createRef();
@@ -68,19 +70,38 @@ class Chat extends React.Component {
     })
   }
   joinAsBtnClick(evt) {
-    this.setState((state) => {
+    this.setState(state => {
       state.joinModalDisplay = !state.joinModalDisplay;
       return state;
     })
+  }
+  joinClick(name, room) {
+    console.log(name, room);
+    if (name && room) {
+      this.socket.emit('join', {name, room});
+      this.setState(state => {
+        state.joinModalDisplay = !state.joinModalDisplay;
+        return state;
+      })
+    }
+    return false;
+  }
+  cancelClick() {
+    this.setState(state => {
+      state.joinModalDisplay = !state.joinModalDisplay;
+      return state;
+    });
   }
   render() {
     return (<div className='chat-wrapper'>
       <div className='chat'>
         <div className='chat__sidebar'>
-          <button onClick={this.joinAsBtnClick}>Join As</button>
+          <div className='centered-form' style={{height: '10%'}}>
+            <button onClick={this.joinAsBtnClick}>Join As</button>
+          </div>
         </div>
         <div className='chat__main'>
-          <ChatJoin display={this.state.joinModalDisplay} />
+          <ChatJoin display={this.state.joinModalDisplay} joinClick={this.joinClick} cancelClick={this.cancelClick}/>
           <div id="messages" className='chat__messages'>
             {this.state.messages.map((message, idx) => {
               const time = moment(message.createdAt).format('HH:mm:ss');

@@ -14,8 +14,20 @@ const filter = new Filter();
 
 io.on('connection', (socket) => {
   console.log('new connection is establised');
-  socket.emit('message', generateMessage('Welcome!', 'text'));
-  socket.broadcast.emit('message', generateMessage('A new user has joined','text'));
+
+  socket.on('join', ({name, room}) => {
+    socket.join(room);
+
+    console.log('soket join', name, room);
+    //socket.emit io.emit socket.broadcast.emit
+    //io.to(x).emit, socket.broadcast.to(x).emit
+
+    socket.emit('message', generateMessage(`Welcome ${name} to ${room}!`, 'text'));
+    socket.broadcast.to(room).emit('message', generateMessage(`${name } has joined ${room}`,'text'));
+
+  })
+  //socket.emit('message', generateMessage('Welcome!', 'text'));
+  //socket.broadcast.emit('message', generateMessage('A new user has joined','text'));
   socket.on('sendMessage', (msg, cb) => {
     console.log(`received message: ${msg}`);
     if (filter.isProfane(msg)) {
