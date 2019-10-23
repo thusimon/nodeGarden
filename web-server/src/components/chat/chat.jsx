@@ -4,7 +4,6 @@ const moment = require('moment');
 require('./chat.scss');
 const ChatJoin = require('./chat-join.jsx');
 
-const socket = io();
 
 const $root = document.getElementById('chat-container');
 
@@ -21,8 +20,10 @@ class Chat extends React.Component {
     this.sendMsgInputRef = React.createRef();
     this.sendLocBtnRef = React.createRef();
     this.onSocketMessage = this.onSocketMessage.bind(this);
+    this.onSocketRoomUpdate = this.onSocketRoomUpdate.bind(this);
     this.socket.on('message', this.onSocketMessage);
-    this.state={messages:[], joinModalDisplay:false};
+    this.socket.on('roomUpdate', this.onSocketRoomUpdate);
+    this.state={messages:[], joinModalDisplay:false, users: {}};
   }
   onSocketMessage(msg) {
     this.setState(state => {
@@ -30,12 +31,18 @@ class Chat extends React.Component {
       return state;
     });
   }
+  onSocketRoomUpdate(users) {
+    this.setState(state => {
+      state.users = users;
+      return state;
+    })
+  }
   onFormSubmit(evt) {
     evt.preventDefault();
     const msg = evt.target.elements.message.value;
     if (msg) {
       this.sendMsgBtnRef.current.setAttribute('disabled', 'disabled');
-      socket.emit('sendMessage', msg, (err) => {
+      this.socket.emit('sendMessage', msg, (err) => {
         // delivered call back
         this.sendMsgBtnRef.current.removeAttribute('disabled');
         this.sendMsgInputRef.current.value = '';
@@ -56,7 +63,7 @@ class Chat extends React.Component {
     }
     this.sendLocBtnRef.current.setAttribute('disabled', 'disabled');
     navigator.geolocation.getCurrentPosition((location) => {
-      socket.emit('sendLocation', {
+      this.socket.emit('sendLocation', {
         lat: location.coords.latitude,
         long: location.coords.longitude
       }, (err) => {
@@ -76,9 +83,12 @@ class Chat extends React.Component {
     })
   }
   joinClick(name, room) {
-    console.log(name, room);
     if (name && room) {
-      this.socket.emit('join', {name, room});
+      this.socket.emit('join', {name, room}, (err) => {
+        if (err) {
+          console.log(`there is err when join: ${err}`);
+        }
+      });
       this.setState(state => {
         state.joinModalDisplay = !state.joinModalDisplay;
         return state;
@@ -93,11 +103,26 @@ class Chat extends React.Component {
     });
   }
   render() {
+    console.log(this.state.users);
     return (<div className='chat-wrapper'>
       <div className='chat'>
         <div className='chat__sidebar'>
           <div className='centered-form' style={{height: '10%'}}>
             <button onClick={this.joinAsBtnClick}>Join As</button>
+          </div>
+          <div>
+            {
+              Object.keys(this.state.users).map(room => {
+                const users = this.state.users[room];
+                const userList = users.map(user => <li key={user.name}>{user.name}</li>);
+                return (<div>
+                  <h2 className='room-title' key={`h2${room}`} title='room'>{room}</h2>
+                  <ul key={`ul${room}`} className='users' title='users'>
+                    {userList}
+                  </ul>
+                  </div>)
+              })
+            }
           </div>
         </div>
         <div className='chat__main'>
@@ -108,20 +133,20 @@ class Chat extends React.Component {
               if (message.type=='text') {
                 return (
                   <div key={`msg-p-${idx}`} className='message'>
-                    <p>
-                      <span className='message__name'>Guest</span>
+                    <p className='user-info'>
+                      <span className='message__name'>{message.name}</span>
                       <span className='message__meta'>{time}</span>
                     </p>
-                    <p>{message.text}</p>
+                    <p className='message-info'>{message.text}</p>
                   </div>);
               } else if (message.type=='loc') {
                 return (
                   <div key={`msg-p-${idx}`} className='message'>
-                    <p>
-                      <span className='message__name'>Guest</span>
+                    <p className='user-info'>
+                      <span className='message__name'>{message.name}</span>
                       <span className='message__meta'>{time}</span>
                     </p>
-                    <p><a href={message.text} target="_blank">Current location</a></p>
+                    <p className='message-info'><a href={message.text} target="_blank">Current location</a></p>
                   </div>);
               } else {
               }
@@ -130,7 +155,7 @@ class Chat extends React.Component {
           <div className='compose'>
             <form id="messge-form" onSubmit={this.onFormSubmit}>
               <input type="text" name="message" id="chat-input" placeholder="Input your message here" 
-                ref={this.sendMsgInputRef}/>
+                ref={this.sendMsgInputRef} required autoComplete="off" />
               <button id="chat-send" ref={this.sendMsgBtnRef}>Send</button>
             </form>
             <br></br>

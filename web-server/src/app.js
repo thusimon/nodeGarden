@@ -3,8 +3,8 @@ const socketio = require('socket.io');
 const Filter = require('bad-words');
 const app = require('./appSetup');
 const {generateMessage} = require('../src/utils/message');
-
-const port = process.env.PORT;
+const {addUser, removeUser, getUser, getUsers} = require('../src/utils/users')
+const port = process.env.PORT || '3002';
 
 const server = http.createServer(app);
 
@@ -15,37 +15,51 @@ const filter = new Filter();
 io.on('connection', (socket) => {
   console.log('new connection is establised');
 
-  socket.on('join', ({name, room}) => {
-    socket.join(room);
+  socket.on('join', ({name, room}, cb) => {
+    const {err, user} = addUser(socket.id, name, room);
 
-    console.log('soket join', name, room);
+    if (err) {
+      socket.emit('message', generateMessage('Admin', `cannot join because of ${err}`, 'text'))
+      return cb(err);
+    }
+    socket.join(user.room);
+
     //socket.emit io.emit socket.broadcast.emit
     //io.to(x).emit, socket.broadcast.to(x).emit
 
-    socket.emit('message', generateMessage(`Welcome ${name} to ${room}!`, 'text'));
-    socket.broadcast.to(room).emit('message', generateMessage(`${name } has joined ${room}`,'text'));
-
+    socket.emit('message', generateMessage('Admin', `Welcome ${user.name} to ${user.room}!`, 'text'));
+    socket.broadcast.to(room).emit('message', generateMessage(user.name, `${user.name } has joined ${user.room}`,'text'));
+    io.emit('roomUpdate', getUsers());
+    cb();
   })
-  //socket.emit('message', generateMessage('Welcome!', 'text'));
-  //socket.broadcast.emit('message', generateMessage('A new user has joined','text'));
+  
   socket.on('sendMessage', (msg, cb) => {
-    console.log(`received message: ${msg}`);
+    const user = getUser(socket.id);
+    if (!user) {
+      return cb('cannot send because no such user');
+    }
     if (filter.isProfane(msg)) {
-      console.log('profane words');
-      io.emit('message', generateMessage('x'.repeat(msg.length)+'(profane message)', 'text'));
+      io.to(user.room).emit('message', generateMessage(user.name, 'x'.repeat(msg.length)+'(profane message)', 'text'));
       cb('bad words');
     } else {
-      io.emit('message', generateMessage(msg, 'text'));
+      io.to(user.room).emit('message', generateMessage(user.name, msg, 'text'));
       cb();
     }
   });
   socket.on('sendLocation', (msg, cb) => {
-    console.log('receive send location message');
-    io.emit('message', generateMessage(`https://google.com/maps?q=${msg.lat},${msg.long}`,'loc'));
+    const user = getUser(socket.id);
+    if (!user) {
+      return cb('cannot send because no such user');
+    }
+    io.to(user.room).emit('message', generateMessage(user.name, `https://google.com/maps?q=${msg.lat},${msg.long}`,'loc'));
     cb();
   })
   socket.on('disconnect', () => {
-    io.emit('message', generateMessage('A user has left!','text'));
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit('message', generateMessage(user.name, `${user.name} has left ${user.room}!`,'text'));
+      io.emit('roomUpdate', getUsers());
+    }
   })
 });
 server.listen(port, () => {

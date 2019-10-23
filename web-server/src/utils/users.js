@@ -1,4 +1,4 @@
-const users = [];
+const users = {};
 
 const addUser = (id, name, room) => {
   name = name.trim();
@@ -8,30 +8,46 @@ const addUser = (id, name, room) => {
     return { err: 'name and room cannot be empty'};
   }
 
-  const findUser = users.find(user => (user.name==name && user.room==room));
+  const roomUsers = users[room] || [];
+  const findUser = roomUsers.find(user => (user.name==name));
 
   if (findUser) {
     return { err: 'name is already taken'};
   }
 
-  const user = {id, name, room};
-  users.push(user);
-  return {user};
+  const user = {id, name};
+  roomUsers.push(user);
+  users[room] = roomUsers;
+  return {user: {...user, room}};
 }
 
 const removeUser = (id) => {
-  const idx = users.findIndex(user => user.id==id);
-  if (idx > -1) {
-    return users.splice(idx, 1);
+  for (let room in users) {
+    const roomUsers = users[room];
+    const idx = roomUsers.findIndex(user => user.id==id);
+    if (idx > -1) {
+      const findUser = roomUsers.splice(idx, 1);
+      return {...findUser[0], room};
+    }
   }
 }
 
 const getUser = (id) => {
-  return users.find(user => user.id==id);
+  for (let room in users) {
+    const roomUsers = users[room];
+    const idx = roomUsers.findIndex(user => user.id==id);
+    if (idx > -1) {
+      return {...roomUsers[idx], room};
+    }
+  }
 }
 
 const getUsersInRoom = (room) => {
-  return users.filter(user => user.room==room);
+  return users[room];
 }
 
-module.exports = {addUser, removeUser, getUser, getUsersInRoom};
+const getUsers = () => {
+  return users;
+}
+
+module.exports = {addUser, removeUser, getUser, getUsersInRoom, getUsers};

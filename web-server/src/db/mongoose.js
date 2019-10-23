@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
 mongoose.set('useNewUrlParser', true);
 mongoose.set('useUnifiedTopology', true);
-const CONNECTION_URI = process.env.MONGODB_URI;
+const CONNECTION_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/node-garden';
 
 mongoose.connect(CONNECTION_URI, {
   useNewUrlParser: true,
