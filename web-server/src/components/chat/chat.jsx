@@ -16,14 +16,21 @@ class Chat extends React.Component {
     this.joinAsBtnClick = this.joinAsBtnClick.bind(this);
     this.joinClick = this.joinClick.bind(this);
     this.cancelClick = this.cancelClick.bind(this);
+    this.autoScroll = this.autoScroll.bind(this);
     this.sendMsgBtnRef = React.createRef();
     this.sendMsgInputRef = React.createRef();
     this.sendLocBtnRef = React.createRef();
+    this.messageBoxRef = React.createRef();
     this.onSocketMessage = this.onSocketMessage.bind(this);
     this.onSocketRoomUpdate = this.onSocketRoomUpdate.bind(this);
     this.socket.on('message', this.onSocketMessage);
     this.socket.on('roomUpdate', this.onSocketRoomUpdate);
     this.state={messages:[], joinModalDisplay:false, users: {}};
+    this.socket.emit('requestData', 'getUsers', (err) => {
+      if (err) {
+        console.log(err);
+      }
+    })
   }
   onSocketMessage(msg) {
     this.setState(state => {
@@ -102,6 +109,33 @@ class Chat extends React.Component {
       return state;
     });
   }
+  autoScroll() {
+    if (this.state.joinModalDisplay) {
+      return;
+    }
+    const $msgBox = this.messageBoxRef.current;
+    const $lastMsg = $msgBox.lastElementChild;
+    if (!$lastMsg) {
+      return;
+    }
+    // get the last message height height+marginBottom
+    const lastMsgHeight = parseInt(getComputedStyle($lastMsg).marginBottom) + $lastMsg.offsetHeight;
+    // entire msgBox scroll height
+    const msgBoxScrollHeight = $msgBox.scrollHeight;
+    // msgBox visible height
+    const msgBoxVisibleHeight = $msgBox.offsetHeight;
+    // current msgBox scroll top
+    const msgBoxScrollTop = $msgBox.scrollTop;
+    const currentScrolledHeight = msgBoxScrollTop + msgBoxVisibleHeight;
+    if (currentScrolledHeight + lastMsgHeight < msgBoxScrollHeight) {
+      //do nothing
+    } else {
+      $msgBox.scrollTop = $msgBox.scrollHeight;
+    }
+  }
+  componentDidUpdate() {
+    this.autoScroll();
+  }
   render() {
     console.log(this.state.users);
     return (<div className='chat-wrapper'>
@@ -112,12 +146,12 @@ class Chat extends React.Component {
           </div>
           <div>
             {
-              Object.keys(this.state.users).map(room => {
+              Object.keys(this.state.users).map((room,idx) => {
                 const users = this.state.users[room];
-                const userList = users.map(user => <li key={user.name}>{user.name}</li>);
+                const userList = users.map((user,idx) => <li key={`li${user.name}${idx}`}>{user.name}</li>);
                 return (<div>
-                  <h2 className='room-title' key={`h2${room}`} title='room'>{room}</h2>
-                  <ul key={`ul${room}`} className='users' title='users'>
+                  <h2 className='room-title' key={`h2${room}${idx}`} title='room'>{room}</h2>
+                  <ul key={`ul${room}${idx}`} className='users' title='users'>
                     {userList}
                   </ul>
                   </div>)
@@ -127,7 +161,7 @@ class Chat extends React.Component {
         </div>
         <div className='chat__main'>
           <ChatJoin display={this.state.joinModalDisplay} joinClick={this.joinClick} cancelClick={this.cancelClick}/>
-          <div id="messages" className='chat__messages'>
+          <div id="messages" className='chat__messages' ref={this.messageBoxRef}>
             {this.state.messages.map((message, idx) => {
               const time = moment(message.createdAt).format('HH:mm:ss');
               if (message.type=='text') {

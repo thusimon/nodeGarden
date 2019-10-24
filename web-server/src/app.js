@@ -46,6 +46,13 @@ io.on('connection', (socket) => {
       cb();
     }
   });
+  socket.on('requestData', (msg, cb) => {
+    if (msg == 'getUsers') {
+      socket.emit('roomUpdate', getUsers());
+      return cb();
+    }
+    return cb('unknown request command');
+  })
   socket.on('sendLocation', (msg, cb) => {
     const user = getUser(socket.id);
     if (!user) {
